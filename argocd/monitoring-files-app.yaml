@@ -1,23 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: my-backend
+  name: monitoring-files
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/Jignesh4611/Terraform-AWS.git
     targetRevision: main
-    path: my-backend
-
+    path: .
+    directory:
+      include: "{serviceMonitor.yaml,grafana-ingress.yaml,prometheus-ingress.yaml}"
   destination:
     server: https://kubernetes.default.svc
     namespace: default
-
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
-
-    syncOptions:
-      - CreateNamespace=true
