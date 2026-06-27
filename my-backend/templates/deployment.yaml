@@ -12,26 +12,46 @@ spec:
       labels: 
         app: my-backend
     spec : 
-      containers : 
-      - name : app 
+     containers:
+      - name: app
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        envFrom : 
-          - configMapRef : 
-             name : my-backend-config
-          - secretRef : 
-             name : my-backend-secret
-        ports: 
-        - containerPort : 3000
-        resources : 
-          limits : 
-            memory : "128Mi"
-            cpu : "500m"
-        livenessProbe : 
+        imagePullPolicy: IfNotPresent
+
+        securityContext:
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+
+        envFrom:
+          - configMapRef:
+              name: my-backend-config
+          - secretRef:
+              name: my-backend-secret
+
+        ports:
+          - containerPort: 3000
+
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+
+        livenessProbe:
           httpGet:
-            path : /
-            port : 3000
-          initialDelaySeconds : 5
+            path: /
+            port: 3000
+          initialDelaySeconds: 5
           periodSeconds: 10
+
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
 
 ---
 

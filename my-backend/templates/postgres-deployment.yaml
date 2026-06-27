@@ -14,10 +14,34 @@ spec:
     spec:
       containers:
       - name: postgres
-        image: postgres:15
-        volumeMounts : 
-          - mountPath : /var/lib/postgresql/data
-            name : postgres-storage
+        image: postgres:15.6
+
+        securityContext:
+          allowPrivilegeEscalation: false
+
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+        livenessProbe:
+          tcpSocket:
+            port: 5432
+          initialDelaySeconds: 30
+          periodSeconds: 10
+
+        readinessProbe:
+          tcpSocket:
+            port: 5432
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: postgres-storage
 
         env:
         - name: POSTGRES_DB
@@ -31,9 +55,11 @@ spec:
             secretKeyRef:
               name: my-backend-secret
               key: DB_PASSWORD
+
         ports:
         - containerPort: 5432
-      volumes :
-        - name: postgres-storage 
-          persistentVolumeClaim : 
-           claimName : postgres-pvc
+
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
