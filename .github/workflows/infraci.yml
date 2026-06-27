@@ -29,4 +29,9 @@ jobs:
 
       - name: Run OPA Policy Check
         run: |
-          opa eval -i values.json -d policy.rego "data.kubernetes.deny"
+            RESULT=$(opa eval --format raw -i values.json -d policy.rego "data.kubernetes.deny")
+
+            if [ "$RESULT" != "[]" ]; then
+            echo "OPA Policy Failed: $RESULT"
+            exit 1
+            fi
