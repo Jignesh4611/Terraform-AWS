@@ -1,0 +1,32 @@
+name: Infra Policy Check
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  opa-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout infra repo
+        uses: actions/checkout@v4
+
+      - name: Install yq
+        run: |
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Install OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          chmod +x opa
+          sudo mv opa /usr/local/bin/
+
+      - name: Convert values.yaml to JSON
+        run: |
+          yq -o=json my-backend/values.yaml > values.json
+
+      - name: Run OPA Policy Check
+        run: |
+          opa eval -i values.json -d policy.rego "data.kubernetes.deny"
